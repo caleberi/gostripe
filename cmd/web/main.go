@@ -69,7 +69,7 @@ func main() {
 		templateCache: tc,
 		infoLog:       infoLog,
 		errorLog:      errorLog,
-		version:       "1.0.0",
+		version:       version,
 	}
 
 	if err := app.serve(); err != nil {

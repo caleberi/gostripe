@@ -1,0 +1,1 @@
+GRANT ALL ON  widgets.* TO 'caleb'@'%' IDENTIFIED BY 'secret';

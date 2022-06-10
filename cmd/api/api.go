@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/caleberi/gostripe/internal/driver"
+	"github.com/caleberi/gostripe/internal/models"
 )
 
 const version = "1.0.0"
@@ -31,6 +34,7 @@ type application struct {
 	infoLog  *log.Logger
 	errorLog *log.Logger
 	version  string
+	DB       models.DBModel
 }
 
 // serve function basically start the application server via `net/http`
@@ -56,6 +60,9 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 4000, "📌 app server port")
 	flag.StringVar(&cfg.env, "environment", "development", "📌 application runtime environment {production|developement|maintenace}")
+	flag.StringVar(&cfg.db.dns, "dsn", "caleb:secret@tcp(localhost:3306)/gostripe?parseTime=true&tls=false", "📌 database domain service name (DSN)")
+
+	flag.Parse()
 
 	// retrieve stripe setup from os package
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
@@ -64,12 +71,22 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// connect to the database
+	conn, err := driver.OpenDB(cfg.db.dns)
+	if err != nil {
+		errorLog.Fatalln(err)
+	}
+	defer conn.Close()
+
 	// initializing the application with obtained configuration
 	app := &application{
 		config:   cfg,
 		infoLog:  infoLog,
 		errorLog: errorLog,
 		version:  version,
+		DB: models.DBModel{
+			DB: conn,
+		},
 	}
 
 	if err := app.serve(); err != nil {

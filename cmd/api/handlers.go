@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/caleberi/gostripe/internal/cards"
+	"github.com/go-chi/chi/v5"
 )
 
 // payload representation for stripe
@@ -77,4 +78,33 @@ func (app *application) GetPaymentIntent(w http.ResponseWriter, r *http.Request)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(out)
 	}
+}
+
+func (app *application) GetWidgetById(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	widgetId, err := strconv.Atoi(id)
+
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	widget, err := app.DB.GetWidget(widgetId)
+
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	out, err := json.MarshalIndent(widget, "", "   ")
+
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
+
 }

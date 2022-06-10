@@ -9,27 +9,36 @@ import (
 )
 
 type templateData struct {
-	StringMap       map[string]string
-	IntMap          map[string]int
-	FloatMap        map[string]float64
-	Data            map[string]interface{}
-	Flash           string
-	Warning         string
-	CSRFToken       string
-	IsAuthenticated bool
-	Error           string
-	CSSVersion      string
-	AppVersion      string
-	API             string
+	StringMap            map[string]string
+	IntMap               map[string]int
+	FloatMap             map[string]float64
+	Data                 map[string]interface{}
+	Flash                string
+	Warning              string
+	CSRFToken            string
+	IsAuthenticated      bool
+	Error                string
+	CSSVersion           string
+	AppVersion           string
+	API                  string
+	StripeSecretKey      string
+	StripePublishableKey string
 }
 
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"formatCurrency": func(val int) string {
+		f := float32(val / 100)
+		return fmt.Sprintf("N %.2f", f)
+	},
+}
 
 //go:embed templates
 var templateFS embed.FS
 
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	td.API = app.config.api
+	td.StripePublishableKey = app.config.stripe.key
+	td.StripeSecretKey = app.config.stripe.secret
 	return td
 }
 
@@ -71,6 +80,7 @@ func (app *application) parseTemplate(partials []string, page, templateToRender 
 			partials[i] = fmt.Sprintf("templates/partials/%s.gohtml", p)
 		}
 	}
+
 	path := fmt.Sprintf("%s.gohtml", page)
 	if len(partials) > 0 {
 		t, err = template.New(path).Funcs(functions).ParseFS(

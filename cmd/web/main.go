@@ -8,6 +8,9 @@ import (
 	"os"
 	"text/template"
 	"time"
+
+	"github.com/caleberi/gostripe/internal/driver"
+	"github.com/caleberi/gostripe/internal/models"
 )
 
 const version = "1.0.0"
@@ -32,6 +35,7 @@ type application struct {
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 	version       string
+	DB            models.DBModel
 }
 
 func (app *application) serve() error {
@@ -54,13 +58,24 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 3000, "📌 app server port")
 	flag.StringVar(&cfg.env, "environment", "development", "📌 application runtime environment")
-	flag.StringVar(&cfg.api, "api", "http://localhost:3001", "📌 api endpoint entry for application")
+	flag.StringVar(&cfg.api, "api", "http://localhost:4000", "📌 api endpoint entry for application")
+	flag.StringVar(&cfg.db.dns, "dsn", "caleb:secret@tcp(localhost:3306)/gostripe?parseTime=true&tls=false", "📌 database domain service name (DSN)")
+
+	flag.Parse()
 
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
 	cfg.stripe.secret = os.Getenv("STRIPE_SECRET")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	conn, err := driver.OpenDB(cfg.db.dns)
+
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
+	defer conn.Close()
 
 	tc := make(map[string]*template.Template)
 
@@ -70,6 +85,9 @@ func main() {
 		infoLog:       infoLog,
 		errorLog:      errorLog,
 		version:       version,
+		DB: models.DBModel{
+			DB: conn,
+		},
 	}
 
 	if err := app.serve(); err != nil {

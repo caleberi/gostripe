@@ -1,0 +1,2 @@
+drop_column("widgets","image")
+drop_column("users","image")

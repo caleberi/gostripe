@@ -1,0 +1,2 @@
+add_column("transactions","payment_intent","string",{"default":true})
+add_column("transactions","payment_method","string",{"default":true})

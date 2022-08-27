@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"flag"
 	"fmt"
 	"log"
@@ -9,12 +10,15 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/caleberi/gostripe/internal/driver"
 	"github.com/caleberi/gostripe/internal/models"
 )
 
 const version = "1.0.0"
 const cssVersion = "1"
+
+var session *scs.SessionManager
 
 type config struct {
 	port int
@@ -36,6 +40,7 @@ type application struct {
 	templateCache map[string]*template.Template
 	version       string
 	DB            models.DBModel
+	Session       *scs.SessionManager
 }
 
 func (app *application) serve() error {
@@ -54,12 +59,14 @@ func (app *application) serve() error {
 }
 
 func main() {
+	gob.Register(TransactionData{})
+
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 3000, "📌 app server port")
 	flag.StringVar(&cfg.env, "environment", "development", "📌 application runtime environment")
-	flag.StringVar(&cfg.api, "api", "http://localhost:4000", "📌 api endpoint entry for application")
-	flag.StringVar(&cfg.db.dns, "dsn", "caleb:secret@tcp(localhost:3306)/gostripe?parseTime=true&tls=false", "📌 database domain service name (DSN)")
+	flag.StringVar(&cfg.api, "api", "http://localhost:4001", "📌 api endpoint entry for application")
+	flag.StringVar(&cfg.db.dns, "dsn", "root:root@tcp(localhost:3306)/gostripe?parseTime=true&tls=false", "📌 database domain service name (DSN)")
 
 	flag.Parse()
 
@@ -77,6 +84,9 @@ func main() {
 
 	defer conn.Close()
 
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+
 	tc := make(map[string]*template.Template)
 
 	app := &application{
@@ -88,6 +98,7 @@ func main() {
 		DB: models.DBModel{
 			DB: conn,
 		},
+		Session: session,
 	}
 
 	if err := app.serve(); err != nil {

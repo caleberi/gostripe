@@ -27,8 +27,8 @@ type templateData struct {
 
 var functions = template.FuncMap{
 	"formatCurrency": func(val int) string {
-		f := float32(val / 100)
-		return fmt.Sprintf("N %.2f", f)
+		f := float32(val) / float32(100)
+		return fmt.Sprintf("$ %.2f", f)
 	},
 }
 

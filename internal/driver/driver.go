@@ -33,9 +33,11 @@ func ConfigureDB(dsn string, config DBConfiguration) (*sql.DB, error) {
 	if config.ConnMaxLifetime != 0 {
 		db.SetConnMaxLifetime(config.ConnMaxLifetime)
 	}
+
 	return db, nil
 }
 
+// OpenDB creates sql connection to a database
 func OpenDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {

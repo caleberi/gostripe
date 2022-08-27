@@ -14,8 +14,8 @@ import (
 
 const version = "1.0.0"
 
-// configuration setup for the application which allows applcation
-// information management  retrived from the system enviroment or configuration file
+// configuration setup for the application which allows application
+// information management  retrieved from the system environment or configuration file
 type config struct {
 	port int
 	env  string
@@ -71,6 +71,7 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	infoLog.Printf("db.dns :- %s ", cfg.db.dns)
 	// connect to the database
 	conn, err := driver.OpenDB(cfg.db.dns)
 	if err != nil {

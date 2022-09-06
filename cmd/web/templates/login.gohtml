@@ -1,0 +1,38 @@
+{{template "base" .}}
+
+{{define "title"}}
+    Login
+{{end}}
+
+{{define "content"}}
+    <form action="/login" method="post"
+    name="charge_form" id="charge_form"
+    class="d-block needs-validation charge-form"
+    autocomplete="off" novalidate="">
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" name="email" id="email" required autocomplete="email-new" />
+    </div>
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" name="name" id="name" required autocomplete="name-new" />
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" name="password" id="password" required autocomplete="password-new" />
+    </div>
+
+    <hr>
+    <a href="javascript:void(0)" class="btn btn-primary" id="pay-button" onclick="val()">Login</a>
+    </form>
+{{end}}
+
+{{define "js"}}
+<script>
+function val(){
+}
+</script>
+{{end}}

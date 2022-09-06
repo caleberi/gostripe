@@ -24,5 +24,9 @@ func (app *application) routes() http.Handler {
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 	mux.Get("/widgets/{id}", app.ChargeOnce)
 
+	// auth routes
+
+	mux.Get("/login", app.LoginPage)
+
 	return mux
 }
